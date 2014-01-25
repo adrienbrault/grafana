@@ -65,11 +65,13 @@ function (angular, app, _) {
       _.each(state.graphs, function(graph) {
         if (currentRow.panels.length === graphsPerRow) {
           currentRow = angular.copy(rowTemplate);
+          newDashboard.rows.push(currentRow);
         }
 
         panel = {
           type: 'graphite',
           span: 12 / graphsPerRow,
+          title: graph[1].title,
           targets: []
         };
 

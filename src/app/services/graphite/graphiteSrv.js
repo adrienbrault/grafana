@@ -48,7 +48,7 @@ function (angular, _, $, config, kbn) {
         if (date === 'now') {
           return 'now';
         }
-        else if (date.indexOf('now') > 0) {
+        else if (date.indexOf('now') >= 0) {
           date = date.substring(3);
           date = date.replace('m', 'min');
           date = date.replace('M', 'mon');
@@ -58,7 +58,13 @@ function (angular, _, $, config, kbn) {
         date = kbn.parseDate(date);
       }
 
-      return $.plot.formatDate(date, '%H%:%M_%Y%m%d');
+      date = moment.utc(date).local();
+
+      if (config.timezoneOffset) {
+        date = date.zone(config.timezoneOffset)
+      }
+
+      return date.format('HH:mm_YYYYMMDD');
     };
 
     this.match = function(targets, graphiteTargetStr) {
