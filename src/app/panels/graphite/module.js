@@ -335,13 +335,14 @@ function (angular, app, $, _, kbn, moment, timeSeries) {
 
     $scope.receiveGraphiteData = function(results) {
       $scope.panelMeta.loading = false;
+      $scope.legend = [];
+
       if (_.isString(results)) {
         $scope.render(results);
         return;
       }
 
       results = results.data;
-      $scope.legend = [];
       var data = [];
 
       _.each(results, function(targetData) {
@@ -541,7 +542,7 @@ function (angular, app, $, _, kbn, moment, timeSeries) {
           } catch(e) { return; }
 
           if (_.isString(data)) {
-            elem.html('<img src="' + data + '"></img>');
+            render_panel_as_graphite_png();
             return;
           }
 
@@ -627,7 +628,6 @@ function (angular, app, $, _, kbn, moment, timeSeries) {
                   }
                 }
               }
-              //xaxis: int    // the x axis to attach events to
             };
           }
 
@@ -659,6 +659,34 @@ function (angular, app, $, _, kbn, moment, timeSeries) {
 
           plot = $.plot(elem, data, options);
 
+          addAxisLabels();
+        }
+
+        function render_panel_as_graphite_png() {
+          data += '&width=' + elem.width();
+          data += '&height=' + elem.css('height').replace('px', '');
+          data += '&bgcolor=1f1f1f'; // @grayDarker & @kibanaPanelBackground
+          data += '&fgcolor=BBBFC2'; // @textColor & @grayLighter
+          data += scope.panel.stack ? '&areaMode=stacked' : ''
+          data += scope.panel.fill !== 0 ? ('&areaAlpha=' + (scope.panel.fill/10).toFixed(1)) : '';
+          data += scope.panel.linewidth !== 0 ? '&lineWidth=' + scope.panel.linewidth : '';
+          data += scope.panel.steppedLine ? '&lineMode=staircase' : '';
+
+          switch(scope.panel.nullPointMode) {
+          case 'connected':
+            data += '&lineMode=connected';
+            break;
+          case 'null':
+            break; // graphite default lineMode
+          case 'null as zero':
+            data += "&drawNullAsZero=true";
+            break;
+          }
+
+          elem.html('<img src="' + data + '"></img>');
+        }
+
+        function addAxisLabels() {
           if (scope.panel.leftYAxisLabel) {
             elem.css('margin-left', '10px');
             var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
@@ -705,6 +733,7 @@ function (angular, app, $, _, kbn, moment, timeSeries) {
             axis.tickFormatter = kbn.msFormat;
           }
         }
+
 
         function time_format(interval) {
           var _int = kbn.interval_to_seconds(interval);
