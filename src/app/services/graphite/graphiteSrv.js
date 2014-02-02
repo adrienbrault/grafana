@@ -25,12 +25,8 @@ function (angular, _, $, config, kbn, moment) {
         var params = buildGraphitePostParams(graphOptions);
 
         return doGraphiteRequest({
-          method: 'POST',
-          url: config.graphiteUrl + '/render/',
-          data: params.join('&'),
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          }
+          method: 'GET',
+          url: config.graphiteUrl + '/render/?' + params.join('&')
         });
       }
       catch(err) {
